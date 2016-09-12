@@ -16,7 +16,6 @@ public class ColorFrame
 	{
 		// create  frame name chenillard$Id
 		frame = new JFrame("Chenillard" + id);
-		//compr
 		
 		// set frame size
 		frame.setSize(300,300);

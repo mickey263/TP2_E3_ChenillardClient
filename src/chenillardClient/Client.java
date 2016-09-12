@@ -11,15 +11,19 @@ import java.net.InetSocketAddress;
  */
 public class Client
 {
-	private int Port;
-	private String IPHost;
+	private int SrvPort;
+	private int ClientPort;
+	private String ServerIP;
+	public boolean isConnected = false;
 	DatagramSocket socket;
 	InetSocketAddress adrDest;
 			
-	Client(String IPHost, int Port) {
-		// Initialize IPHost and Port
-		this.Port = Port;
-		this.IPHost = IPHost;
+	Client(String ServerIP, int SrvPort, int ClientPort) throws IOException {
+		// Initialize ServerIP, SrvPort and ClientPort
+		this.SrvPort = SrvPort;
+		this.ServerIP = ServerIP;
+		this.ClientPort = ClientPort;
+		open();
 	}
 	
 	public void open() throws IOException
@@ -27,7 +31,9 @@ public class Client
 		//
 		System.out.println("Demarrage du client ...");
 		socket = new DatagramSocket(null);
-		adrDest = new InetSocketAddress(IPHost, Port);
+		System.out.println(ServerIP);
+		adrDest = new InetSocketAddress(ServerIP, SrvPort);
+		socket.bind(new InetSocketAddress(ClientPort));
 	}
 	
 	public void send(String Msg) throws IOException
@@ -39,15 +45,23 @@ public class Client
 		System.out.println("Message sent :" + Msg);
 	}
 	
-	public void waitForInstruction() throws IOException
+	public boolean waitingConnection() throws IOException
 	{
 		// Attente de la reponse 
 		byte[] bufR = new byte[2048];
 		DatagramPacket dpR = new DatagramPacket(bufR, bufR.length);
 		socket.receive(dpR);
 		String Msg = new String(bufR, dpR.getOffset(), dpR.getLength());
+
+		if ("ACK".equals(Msg.replaceAll("[\r\n]+", "")))
+		{
+			isConnected = true;
+			System.out.println("Answer receive OK = "+ Msg);
+			return true;
+		}
 		
-		System.out.println("Answer receipt = "+ Msg);
+		System.out.println("Answer receive NOK = "+ Msg);
+		return false;
 	}
 	
 	public void close() throws IOException
